@@ -1,15 +1,13 @@
 package com.technokratos.newmarketplaceservice.controllers;
 
-import com.technokratos.newmarketplaceservice.enums.MarketplaceServiceUrl;
 import com.technokratos.newmarketplaceservice.dto.OrderDto;
 import com.technokratos.newmarketplaceservice.dto.ProductDto;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpMethod;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
-import java.util.List;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @RestController
 public class ProductsController {
@@ -17,12 +15,12 @@ public class ProductsController {
     @Autowired
     private RestTemplate restTemplate;
 
-    private String url = MarketplaceServiceUrl.PRODUCTS.getUrl();
+    @Value("${products.url}")
+    private String url;
 
     @GetMapping("/products")
-    public ResponseEntity<List<OrderDto>> getAllProducts() {
-        return restTemplate.exchange(url, HttpMethod.GET, null,
-                new ParameterizedTypeReference<List<OrderDto>>() {});
+    public ResponseEntity<OrderDto[]> getAllProducts() {
+        return restTemplate.getForEntity(url, OrderDto[].class);
     }
 
     @PostMapping("/products")
@@ -32,12 +30,14 @@ public class ProductsController {
 
     @PutMapping("/products/{product-id}")
     public void updateProduct(@PathVariable("product-id") Long productId, @RequestBody ProductDto product) {
-        restTemplate.put(url, product, productId);
+        restTemplate.put(UriComponentsBuilder.fromHttpUrl(url).path("/{product-id}")
+                .buildAndExpand(productId).toUriString(), product);
     }
 
     @DeleteMapping("/products/{product-id}")
     public void deleteProduct(@PathVariable("product-id") Long productId) {
-        restTemplate.delete(url + "/" + productId);
+        restTemplate.delete(UriComponentsBuilder.fromHttpUrl(url).path("/{product-id}")
+                .buildAndExpand(productId).toUriString());
     }
 
 }
