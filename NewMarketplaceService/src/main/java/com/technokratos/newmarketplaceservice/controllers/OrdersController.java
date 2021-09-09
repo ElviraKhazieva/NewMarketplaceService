@@ -20,8 +20,10 @@ public class OrdersController {
     @Autowired
     private RestTemplate restTemplate;
 
-    @Value("${orders.url}")
+    @Value("${url}")
     private String url;
+
+    private static final String PATH = "orders";
 
     private static final String ARTICLE_PARAM = "article={article}";
 
@@ -29,16 +31,15 @@ public class OrdersController {
 
     private static final String DATE_RANGE_PARAM = "startDate={startDate}&endDate={endDate}";
 
-
     @GetMapping(value = "/orders", params = {"email"})
     public ResponseEntity<OrderDto[]> getOrdersByEmail(@RequestParam("email") String email) {
-        return restTemplate.getForEntity(UriComponentsBuilder.fromHttpUrl(url).query(EMAIL_PARAM)
+        return restTemplate.getForEntity(UriComponentsBuilder.fromHttpUrl(url).path(PATH).query(EMAIL_PARAM)
                 .buildAndExpand(email).toUriString(), OrderDto[].class);
     }
 
     @GetMapping(value = "/orders", params = {"article"})
     public ResponseEntity<OrderDto[]> getOrdersContainsProductArticle(@RequestParam("article") String article) {
-        return restTemplate.getForEntity(UriComponentsBuilder.fromHttpUrl(url).query(ARTICLE_PARAM)
+        return restTemplate.getForEntity(UriComponentsBuilder.fromHttpUrl(url).path(PATH).query(ARTICLE_PARAM)
                 .buildAndExpand(article).toUriString(), OrderDto[].class);
 
     }
@@ -47,7 +48,7 @@ public class OrdersController {
     public ResponseEntity<List<OrderDto>> getOrdersInRange(
             @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
             @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
-        OrderDto[] ordersInRange = restTemplate.getForObject(UriComponentsBuilder.fromHttpUrl(url).query(DATE_RANGE_PARAM)
+        OrderDto[] ordersInRange = restTemplate.getForObject(UriComponentsBuilder.fromHttpUrl(url).path(PATH).query(DATE_RANGE_PARAM)
                 .buildAndExpand(startDate, endDate).toUriString(), OrderDto[].class);
         return ResponseEntity.ok(Arrays.asList(ordersInRange));
     }
